@@ -1,0 +1,6 @@
+{
+  "name": "Connect4",
+  "height": 6,
+  "width": 7,
+  "win_length": 4
+}
