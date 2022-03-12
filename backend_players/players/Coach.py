@@ -10,9 +10,9 @@ from tqdm import tqdm
 
 from backend_players.players.Arena import Arena
 from backend_players.players.MCTS import MCTS
+#from backend_players.players.buffers.logged_replay_buffer import OutOfGraphLoggedReplayBuffer
 
 log = logging.getLogger(__name__)
-
 
 class Coach():
     """
@@ -28,6 +28,12 @@ class Coach():
         self.mcts = MCTS(self.game, self.nnet, self.args)
         self.trainExamplesHistory = []  # history of examples from args.numItersForTrainExamplesHistory latest iterations
         self.skipFirstSelfPlay = False  # can be overriden in loadTrainExamples()
+        #self.buffer = OutOfGraphLoggedReplayBuffer(args.replay_log,
+        #                                           batch_size=32,
+        #                                           observation_shape=self.game.getBoardSize(),
+        #                                           replay_capacity=1000000,
+        #                                           stack_size=1,
+        #                                           gamma=1)
 
     def executeEpisode(self):
         """
@@ -49,6 +55,8 @@ class Coach():
         board = self.game.getInitBoard()
         self.curPlayer = 1
         episodeStep = 0
+        
+        #self.buffer.add(board, ) # NEW: Save in buffer, initial step
 
         while True:
             episodeStep += 1
@@ -65,6 +73,8 @@ class Coach():
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 
             r = self.game.getGameEnded(board, self.curPlayer)
+
+            #self.buffer.add(board, action, r, r != 0) # NEW: Save in buffer
 
             if r != 0:
                 return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
@@ -127,6 +137,8 @@ class Coach():
                 log.info('ACCEPTING NEW MODEL')
                 self.nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
                 self.nnet.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
+
+        #self.buffer.log_final_buffer() # NEW: Output the last of the buffer to the disk
 
     def getCheckpointFile(self, iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'

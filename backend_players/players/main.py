@@ -4,8 +4,8 @@ import logging
 import requests
 
 from backend_players.players.Coach import Coach
-from backend_players.players.chess.chess_game import ChessGame as Game
-from backend_players.players.chess.keras.NNet import NNetWrapper as nn
+from backend_players.players.connect4.connect4_game import Connect4Game as Game
+from backend_players.players.connect4.keras.NNet import NNetWrapper as nn
 from backend_players.players.utils import *
 
 from pathlib import Path
@@ -15,22 +15,25 @@ log = logging.getLogger(__name__)
 coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 GAME_URL = 'http://localhost:8000/api/v1/games/' # Game endpoint
-DEFAULT_CHECKPOINT = 'D:/modelos/chess/modelo2'
+
+DEFAULT_CHECKPOINT = 'D:/modelos/connect4/modelo'
+DEFAULT_REPLAY_LOG = DEFAULT_CHECKPOINT + '/replay_logs/'
 
 args = dotdict({
     'numIters': 50,
     'numEps': 40,              # Number of complete self-play games to simulate during a new iteration.
-    'tempThreshold': 10,        #
+    'tempThreshold': 15,        #
     'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
     'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
-    'numMCTSSims': 30,          # Number of games moves for MCTS to simulate.
+    'numMCTSSims': 25,          # Number of games moves for MCTS to simulate.
     'arenaCompare': 20,         # Number of games to play during arena play to determine if new net will be accepted.
     'cpuct': 1,
 
     'checkpoint': DEFAULT_CHECKPOINT,
+    'replay_log': DEFAULT_REPLAY_LOG,
     'load_model': False,
     'load_folder_file': ('temp/', 'best.pth.tar'),
-    'numItersForTrainExamplesHistory': 20,
+    'numItersForTrainExamplesHistory': 40,
 })
 
 
@@ -42,7 +45,7 @@ def train_offline(game_configuration, small, model=DEFAULT_CHECKPOINT):
     g = Game(game_configuration)
 
     log.info('Loading %s...', nn.__name__)
-    nnet = nn(g, small, args.checkpoint)
+    nnet = nn(g, args.checkpoint)
 
     if args.load_model:
         log.info('Loading checkpoint "%s/%s"...', args.load_folder_file[0], args.load_folder_file[1])

@@ -6,9 +6,9 @@ class Connect4Game(Game):
     Connect4Game class implementing the alpha-zero-general Game interface.
     """
 
-    def __init__(self, height, width):
-        #self.board = Board.from_json(path)
-        self.board = Board(height, width)
+    def __init__(self, path):
+        self.board = Board.from_json(path)
+        #self.board = Board(height, width)
 
     def getInitBoard(self):
         return self.board.np_pieces
@@ -30,7 +30,7 @@ class Connect4Game(Game):
 
     def getGameEnded(self, board, player):
         next_board = self.board.copy(np_pieces=board)
-        state = next_board.has_ended(player)
+        state = next_board.has_ended()
         return state
 
     def getCanonicalForm(self, board, player):

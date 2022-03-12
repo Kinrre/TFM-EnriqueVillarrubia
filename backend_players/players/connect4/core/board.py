@@ -61,7 +61,7 @@ class Board():
 
         self.np_pieces[valid_rows[-1]][action] = player
 
-    def has_ended(self, player):
+    def has_ended(self):
         """
         Returns the reward of the game. Four values are possible, 0 if the game
         has not finished, 1 if the player1 has win, -1 if the player1
@@ -70,13 +70,13 @@ class Board():
         reward = 0
         winner = 0
 
-        for _player in [DEFAULT_PLAYER_2, DEFAULT_PLAYER_1]:
-            player_pieces = self.np_pieces == -_player
+        for player in [DEFAULT_PLAYER_2, DEFAULT_PLAYER_1]:
+            player_pieces = self.np_pieces == -player
             # Check rows & columns for win
             if (self._is_straight_winner(player_pieces) or
                 self._is_straight_winner(player_pieces.transpose()) or
                 self._is_diagonal_winner(player_pieces)):
-                winner = -_player
+                winner = -player
 
         if winner == player:
             # Win has a positive reward
@@ -94,7 +94,6 @@ class Board():
         """ Checks if player_pieces contains a vertical or horizontal win. """
         run_lengths = [player_pieces[:, i:i + self.win_length].sum(axis=1)
                        for i in range(len(player_pieces) - self.win_length + 2)]
-                       
         return max([x.max() for x in run_lengths]) >= self.win_length
 
     def _is_diagonal_winner(self, player_pieces):

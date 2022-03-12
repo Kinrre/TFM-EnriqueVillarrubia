@@ -48,7 +48,7 @@ class Arena():
 
             if verbose:
                 assert self.display
-                print("Turn ", str(it), "Movements ", self.game.board.current_movement, "Player ", str(curPlayer))
+                print("Turn ", str(it), "Movements ", str(it), "Player ", str(curPlayer))
                 self.display(board)
 
             action = players[curPlayer + 1](self.game.getCanonicalForm(board, curPlayer))
@@ -67,7 +67,8 @@ class Arena():
             print("Game over: Turn ", str(it), "Result ", str(has_end))
             self.display(board)
 
-        return curPlayer * has_end
+        #return curPlayer * has_end
+        return has_end # NEW: Current player is taked into account the board logic
 
     def playGames(self, num, verbose=False):
         """
