@@ -1,4 +1,4 @@
-from backend_players.players.alphazero.buffers.fixed_replay_buffer import FixedReplayBuffer
+from backend_players.players.buffers.fixed_replay_buffer import FixedReplayBuffer
 
 import numpy as np
 import tensorflow.compat.v1 as tf
