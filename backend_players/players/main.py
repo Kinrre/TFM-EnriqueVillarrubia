@@ -16,12 +16,12 @@ coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 GAME_URL = 'http://localhost:8000/api/v1/games/' # Game endpoint
 
-DEFAULT_CHECKPOINT = 'D:/modelos/connect4/modelo'
+DEFAULT_CHECKPOINT = '/media/kinrre/HDD/modelos/connect4/modelo2/'
 DEFAULT_REPLAY_LOG = DEFAULT_CHECKPOINT + '/replay_logs/'
 
 args = dotdict({
-    'numIters': 50,
-    'numEps': 40,              # Number of complete self-play games to simulate during a new iteration.
+    'numIters': 2,
+    'numEps': 40,               # Number of complete self-play games to simulate during a new iteration.
     'tempThreshold': 15,        #
     'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
     'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.

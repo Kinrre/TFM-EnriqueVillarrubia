@@ -49,3 +49,6 @@ tqdm == 4.61.0
 uvicorn == 0.13.4
 psycopg2 == 2.8.6
 python-multipart == 0.0.5
+
+# dopamine-rl
+dopamine-rl==4.0.2
