@@ -4,9 +4,9 @@ import os
 
 from tensorflow.keras.callbacks import TensorBoard
 
-from backend_players.players.utils import *
-from backend_players.players.NeuralNet import NeuralNet
-from backend_players.players.connect4.keras.Connect4NNet import Connect4NNet
+from backend_players.players.alphazero.utils import *
+from backend_players.players.alphazero.NeuralNet import NeuralNet
+from backend_players.players.alphazero.connect4.keras.Connect4NNet import Connect4NNet
 
 DEFAULT_LOG_DIR = 'D:/modelos/connect4/modelo'
 

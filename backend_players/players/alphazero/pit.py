@@ -1,12 +1,12 @@
 import numpy as np
 
-from backend_players.players.Arena import Arena
-from backend_players.players.MCTS import MCTS
-from backend_players.players.utils import dotdict
+from backend_players.players.alphazero.Arena import Arena
+from backend_players.players.alphazero.MCTS import MCTS
+from backend_players.players.alphazero.utils import dotdict
 
-from backend_players.players.connect4.connect4_game import Connect4Game
-from backend_players.players.connect4.connect4_players import HumanConnect4Player, OneStepLookaheadConnect4Player, RandomPlayer
-from backend_players.players.connect4.keras.NNet import NNetWrapper
+from backend_players.players.alphazero.connect4.connect4_game import Connect4Game
+from backend_players.players.alphazero.connect4.connect4_players import HumanConnect4Player, OneStepLookaheadConnect4Player, RandomPlayer
+from backend_players.players.alphazero.connect4.keras.NNet import NNetWrapper
 
 path = 'backend_players/players/examples/second_game.json'
 

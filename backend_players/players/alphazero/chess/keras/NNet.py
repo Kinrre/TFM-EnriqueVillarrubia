@@ -4,9 +4,9 @@ import os
 
 from tensorflow.keras.callbacks import TensorBoard
 
-from backend_players.players.utils import *
-from backend_players.players.NeuralNet import NeuralNet
-from backend_players.players.chess.keras.ChessNNet import ChessNNet, ChessNNetSmall
+from backend_players.players.alphazero.utils import *
+from backend_players.players.alphazero.NeuralNet import NeuralNet
+from backend_players.players.alphazero.chess.keras.ChessNNet import ChessNNet, ChessNNetSmall
 
 DEFAULT_LOG_DIR = 'D:/modelos/chess/modelo2'
 

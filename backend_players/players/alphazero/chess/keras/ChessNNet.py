@@ -4,7 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, Dense, Dropout, Reshape, Activation, Flatten
 from tensorflow.keras.optimizers import Adam
 
-from backend_players.players.utils import *
+from backend_players.players.alphazero.utils import *
 
 MAX_GPU_MEMORY = 1400
 

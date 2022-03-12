@@ -1,8 +1,8 @@
 import json
 import numpy as np
 
-from backend_players.players.chess.core.piece import Piece
-from backend_players.players.chess.core.utils import PIECES, MOVEMENTS
+from backend_players.players.alphazero.chess.core.piece import Piece
+from backend_players.players.alphazero.chess.core.utils import PIECES, MOVEMENTS
 
 DEFAULT_HEIGHT = 6
 DEFAULT_WIDTH = 6

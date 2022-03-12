@@ -8,9 +8,9 @@ from random import shuffle
 import numpy as np
 from tqdm import tqdm
 
-from backend_players.players.Arena import Arena
-from backend_players.players.MCTS import MCTS
-from backend_players.players.buffers.logged_replay_buffer import OutOfGraphLoggedReplayBuffer
+from backend_players.players.alphazero.Arena import Arena
+from backend_players.players.alphazero.MCTS import MCTS
+from backend_players.players.alphazero.buffers.logged_replay_buffer import OutOfGraphLoggedReplayBuffer
 
 log = logging.getLogger(__name__)
 

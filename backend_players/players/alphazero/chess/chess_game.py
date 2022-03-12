@@ -1,14 +1,13 @@
-from backend_players.players.Game import Game
-from backend_players.players.connect4.core.board import Board
+from backend_players.players.alphazero.Game import Game
+from backend_players.players.alphazero.chess.core import Board
 
-class Connect4Game(Game):
+class ChessGame(Game):
     """
-    Connect4Game class implementing the alpha-zero-general Game interface.
+    ChessGame class implementing the alpha-zero-general Game interface.
     """
 
     def __init__(self, path):
         self.board = Board.from_json(path)
-        #self.board = Board(height, width)
 
     def getInitBoard(self):
         return self.board.np_pieces
@@ -20,17 +19,22 @@ class Connect4Game(Game):
         return self.board.action_size
 
     def getNextState(self, board, player, action):
+        self.board.current_movement += 1
         next_board = self.board.copy(np_pieces=board)
-        next_board.move(action, player)
+        next_board.move(action)
         return next_board.np_pieces, -player
 
     def getValidMoves(self, board, player):
         next_board = self.board.copy(np_pieces=board)
-        return next_board.get_valid_moves()
+        return next_board.valid_moves()
 
     def getGameEnded(self, board, player):
         next_board = self.board.copy(np_pieces=board)
         state = next_board.has_ended()
+
+        if state != 0:
+            self.board.current_movement = 0
+
         return state
 
     def getCanonicalForm(self, board, player):
@@ -42,7 +46,7 @@ class Connect4Game(Game):
         return [(board, pi), (board[:, ::-1], pi[::-1])]
 
     def stringRepresentation(self, board):
-        return board.tobytes()
+        return board.tostring() + bytes([self.board.current_movement])
 
     @staticmethod
     def display(board):

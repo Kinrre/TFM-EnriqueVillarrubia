@@ -5,7 +5,7 @@ from multiprocessing import Process
 
 from backend_players.schemas import PlayGamePetition, PlayGameResponse
 from backend_players.core.config import GAME_URL, MEMORY_GPU, TIME_WAIT_GPU
-from backend_players.players.ArenaOnline import play
+from backend_players.players.alphazero.ArenaOnline import play
 
 import GPUtil
 import requests

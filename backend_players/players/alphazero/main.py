@@ -3,10 +3,10 @@ import coloredlogs
 import logging
 import requests
 
-from backend_players.players.Coach import Coach
-from backend_players.players.connect4.connect4_game import Connect4Game as Game
-from backend_players.players.connect4.keras.NNet import NNetWrapper as nn
-from backend_players.players.utils import *
+from backend_players.players.alphazero.Coach import Coach
+from backend_players.players.alphazero.connect4.connect4_game import Connect4Game as Game
+from backend_players.players.alphazero.connect4.keras.NNet import NNetWrapper as nn
+from backend_players.players.alphazero.utils import *
 
 from pathlib import Path
 

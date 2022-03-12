@@ -4,11 +4,11 @@ import socketio
 import sys
 import re
 
-from backend_players.players.MCTS import MCTS
-from backend_players.players.utils import dotdict
+from backend_players.players.alphazero.MCTS import MCTS
+from backend_players.players.alphazero.utils import dotdict
 
-from backend_players.players.chess.chess_game import ChessGame as Game
-from backend_players.players.chess.keras.NNet import NNetWrapper
+from backend_players.players.alphazero.chess.chess_game import ChessGame as Game
+from backend_players.players.alphazero.chess.keras.NNet import NNetWrapper
 
 log = logging.getLogger(__name__)
 SOCKET_IO_ENDPOINT = 'http://localhost:8001/'

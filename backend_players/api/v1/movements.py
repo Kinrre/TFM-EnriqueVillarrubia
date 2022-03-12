@@ -3,7 +3,7 @@ from fastapi.exceptions import HTTPException
 
 from backend_players.schemas import MovementCheckResponse, MovementCheckPetition
 from backend_players.core.config import GAME_URL
-from backend_players.players.chess.core.board import Board
+from backend_players.players.alphazero.chess.core.board import Board
 
 import requests
 

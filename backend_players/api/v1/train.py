@@ -5,7 +5,7 @@ from multiprocessing import Process
 
 from backend_players.schemas import TrainResponse
 from backend_players.core.config import GAME_URL, MEMORY_GPU, TIME_WAIT_GPU
-from backend_players.players.main import train
+from backend_players.players.alphazero.main import train
 
 import GPUtil
 import requests
