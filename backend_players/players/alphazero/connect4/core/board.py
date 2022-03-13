@@ -54,6 +54,7 @@ class Board():
         return self.np_pieces[0] == 0
 
     def move(self, action, player):
+        """ Place a piece on the column specified by the player. """
         valid_rows = np.where(self.np_pieces[:, action] == 0)[0]
 
         if len(valid_rows) == 0:
