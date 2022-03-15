@@ -8,7 +8,7 @@ from backend_players.players.alphazero.connect4.connect4_game import Connect4Gam
 from backend_players.players.alphazero.connect4.connect4_players import HumanConnect4Player, OneStepLookaheadConnect4Player, RandomPlayer
 from backend_players.players.alphazero.connect4.keras.NNet import NNetWrapper
 
-path = 'backend_players/players/examples/second_game.json'
+path = 'backend_players/players/alphazero/examples/second_game.json'
 
 with open(path, 'r') as f:
     content = f.read()
@@ -19,7 +19,7 @@ gp = OneStepLookaheadConnect4Player(g, verbose=False).play
 rp = RandomPlayer(g).play
 
 n1 = NNetWrapper(g, True)
-n1.load_checkpoint('D:/modelos/connect4/modelo', 'checkpoint_21.pth.tar')
+n1.load_checkpoint('/media/kinrre/HDD/modelos/connect4/modelo3/', 'best.pth.tar')
 
 args1 = dotdict({'numMCTSSims': 25, 'cpuct': 1})
 mcts1 = MCTS(g, n1, args1)
@@ -32,6 +32,6 @@ n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
 #mcts2 = MCTS(g, n2, args2)
 #n2p = lambda x: np.argmax(mcts2.getActionProb(x, temp=0))
 
-arena = Arena(n1p, gp, g, display=Connect4Game.display)
+arena = Arena(n1p, rp, g, display=Connect4Game.display)
 
-print(arena.playGames(20, verbose=True))
+print(arena.playGames(50, verbose=False))

@@ -148,3 +148,6 @@ cython_debug/
 
 # Documentation latex
 docs_latex/
+
+# Visual code
+.vscode/

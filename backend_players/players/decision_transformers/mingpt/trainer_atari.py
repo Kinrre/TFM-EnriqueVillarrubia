@@ -134,8 +134,6 @@ class Trainer:
         self.tokens = 0 # counter used for learning rate decay
 
         for epoch in range(config.max_epochs):
-            print('asdf')
-            print(self.model.module)
             run_epoch('train', epoch_num=epoch)
             # if self.test_dataset is not None:
             #     test_loss = run_epoch('test')
@@ -182,7 +180,7 @@ class Trainer:
             rtgs = [ret]
             
             # first state is from env, first rtg is target return, and first timestep is 0
-            sampled_action = sample(self.model.module, state, 1, temperature=1.0, sample=True, actions=None, 
+            sampled_action = sample(self.model.module, state, 1, temperature=1.0, sample=True, actions=None, valid_actions=None,
                                     rtgs=torch.tensor(rtgs, dtype=torch.long).to(self.device).unsqueeze(0).unsqueeze(-1), 
                                     timesteps=torch.zeros((1, 1, 1), dtype=torch.int64).to(self.device))
 
@@ -193,14 +191,53 @@ class Trainer:
             while True:
                 if done:
                     state, reward_sum, done = game.reset(), 0, False
-                    
+
                 action = sampled_action.cpu().numpy()[0,-1]
+
+                if game.player == -1:
+                    #action = np.random.randint(game.getActionSize())
+                    #valids = game.getValidMoves()
+                   
+                    #while valids[action] != 1:
+                    #    action = np.random.randint(game.getActionSize())
+                    valid_moves = game.getValidMoves()
+                    win_move_set = set()
+                    fallback_move_set = set()
+                    stop_loss_move_set = set()
+                    player_num = -1
+
+                    state2 = state.squeeze(0).squeeze(0).cpu().numpy()
+
+                    for move, valid in enumerate(valid_moves):
+                        if not valid: continue
+                        if player_num == game.getGameEnded(*game.getNextState(state2, player_num, move)):
+                            win_move_set.add(move)
+                        if -player_num == game.getGameEnded(*game.getNextState(state2, -player_num, move)):
+                            stop_loss_move_set.add(move)
+                        else:
+                            fallback_move_set.add(move)
+
+                    if len(win_move_set) > 0:
+                        ret_move = np.random.choice(list(win_move_set))
+                        #print('Playing winning action %s from %s' % (ret_move, win_move_set))
+                    elif len(stop_loss_move_set) > 0:
+                        ret_move = np.random.choice(list(stop_loss_move_set))
+                        #print('Playing loss stopping action %s from %s' % (ret_move, stop_loss_move_set))
+                    elif len(fallback_move_set) > 0:
+                        ret_move = np.random.choice(list(fallback_move_set))
+                        #print('Playing random action %s from %s' % (ret_move, fallback_move_set))
+                    else:
+                        raise Exception('No valid moves remaining: %s' % game.stringRepresentation(state2))
+
+                    action = ret_move
+
                 actions += [sampled_action]
                 state, reward, done = game.step(action)
                 reward_sum += reward
                 j += 1
 
                 if done:
+                    #print(state, action, reward_sum)
                     T_rewards.append(reward_sum)
                     break
 
@@ -209,16 +246,21 @@ class Trainer:
                 all_states = torch.cat([all_states, state], dim=0)
 
                 rtgs += [rtgs[-1] - reward]
+
+                valid_actions = game.getValidMoves()
                 
                 # all_states has all previous states and rtgs has all previous rtgs (will be cut to block_size in utils.sample)
                 # timestep is just current timestep
                 sampled_action = sample(self.model.module, all_states.unsqueeze(0), 1, temperature=1.0, sample=True, 
-                                        actions=torch.tensor(actions, dtype=torch.long).to(self.device).unsqueeze(1).unsqueeze(0), 
+                                        actions=torch.tensor(actions, dtype=torch.long).to(self.device).unsqueeze(1).unsqueeze(0),
+                                        valid_actions=torch.tensor(valid_actions, dtype=torch.long).to(self.device).unsqueeze(0),
                                         rtgs=torch.tensor(rtgs, dtype=torch.long).to(self.device).unsqueeze(0).unsqueeze(-1), 
                                         timesteps=(min(j, self.config.max_timestep) * torch.ones((1, 1, 1), dtype=torch.int64).to(self.device)))
         
-        eval_return = sum(T_rewards) / 10.
-        print("target return: %d, eval return: %d" % (ret, eval_return))
+        #eval_return = sum(T_rewards) / 10.
+        #print("target return: %d, eval return: %d" % (ret, eval_return))
+        print(np.unique(T_rewards, return_counts=True))
         self.model.train(True)
         
-        return eval_return
+        #return eval_return
+

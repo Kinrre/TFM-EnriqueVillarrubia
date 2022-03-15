@@ -150,10 +150,10 @@ class GPT(nn.Module):
         logger.info("number of parameters: %e", sum(p.numel() for p in self.parameters()))
 
 
-        self.state_encoder = nn.Sequential(nn.Conv2d(1, 16, 3, stride=3, padding=0), nn.ReLU(),
-                                           nn.Conv2d(16, 32, 2, stride=2, padding=0), nn.ReLU(),
+        self.state_encoder = nn.Sequential(nn.Conv2d(1, 4, 3, stride=3, padding=0), nn.ReLU(),
+                                           nn.Conv2d(4, 16, 2, stride=2, padding=0), nn.ReLU(),
                                            #nn.Conv2d(64, 64, 1, stride=1, padding=0), nn.ReLU(),
-                                           nn.Flatten(), nn.Linear(32, config.n_embd), nn.Tanh())
+                                           nn.Flatten(), nn.Linear(16, config.n_embd), nn.Tanh())
 
         self.ret_emb = nn.Sequential(nn.Linear(1, config.n_embd), nn.Tanh())
 
@@ -227,9 +227,6 @@ class GPT(nn.Module):
         # targets: (batch, block_size, 1)
         # rtgs: (batch, block_size, 1)
         # timesteps: (batch, 1, 1)
-        
-        print(states.shape)
-
         state_embeddings = self.state_encoder(states.reshape(-1, 1, 6, 7).type(torch.float32).contiguous()) # (batch * block_size, n_embd)
         state_embeddings = state_embeddings.reshape(states.shape[0], states.shape[1], self.config.n_embd) # (batch, block_size, n_embd)
         
