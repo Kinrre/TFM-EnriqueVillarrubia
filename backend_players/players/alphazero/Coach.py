@@ -33,9 +33,9 @@ class Coach():
                                                    observation_shape=self.game.getBoardSize(),
                                                    replay_capacity=1000000,
                                                    stack_size=1,
-                                                   gamma=1)
+                                                   gamma=0.99)
 
-    def executeEpisode(self):
+    def executeEpisode(self, iteration):
         """
         This function executes one episode of self-play, starting with player 1.
         As the game is played, each turn is added as a training example to
@@ -72,6 +72,7 @@ class Coach():
 
             r = self.game.getGameEnded(board, self.curPlayer)
 
+            #self.buffer.add(board, action, r * iteration, r != 0) # NEW: Save in buffer
             self.buffer.add(board, action, r, r != 0) # NEW: Save in buffer
 
             if r != 0:
@@ -94,7 +95,7 @@ class Coach():
 
                 for _ in tqdm(range(self.args.numEps), desc="Self Play"):
                     self.mcts = MCTS(self.game, self.nnet, self.args)  # reset search tree
-                    iterationTrainExamples += self.executeEpisode()
+                    iterationTrainExamples += self.executeEpisode(i)
 
                 # save the iteration examples to the history 
                 self.trainExamplesHistory.append(iterationTrainExamples)

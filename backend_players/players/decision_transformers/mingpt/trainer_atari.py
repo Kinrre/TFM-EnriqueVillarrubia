@@ -157,13 +157,14 @@ class Trainer:
                 elif self.config.game == 'Pong':
                     eval_return = self.get_returns(20)
                 elif self.config.game == 'Connect4':
-                    eval_return = self.get_returns(1)
+                    eval_return = self.get_returns(38, True)
+                    eval_return = self.get_returns(38, False)
                 else:
                     raise NotImplementedError()
             else:
                 raise NotImplementedError()
 
-    def get_returns(self, ret):
+    def get_returns(self, ret, random):
         self.model.train(False)
         
         with open('backend_players/players/alphazero/examples/second_game.json') as f:
@@ -174,9 +175,13 @@ class Trainer:
         T_rewards, T_Qs = [], []
         done = True
         
-        for i in range(10):
+        for i in range(50):
             state = game.reset()
             state = state.type(torch.float32).to(self.device).unsqueeze(0).unsqueeze(0)
+            state[state == -1] = 0
+            state[state == 0] = 0.5
+            state[state == 1] = 1
+
             rtgs = [ret]
             
             # first state is from env, first rtg is target return, and first timestep is 0
@@ -195,41 +200,43 @@ class Trainer:
                 action = sampled_action.cpu().numpy()[0,-1]
 
                 if game.player == -1:
-                    #action = np.random.randint(game.getActionSize())
-                    #valids = game.getValidMoves()
-                   
-                    #while valids[action] != 1:
-                    #    action = np.random.randint(game.getActionSize())
-                    valid_moves = game.getValidMoves()
-                    win_move_set = set()
-                    fallback_move_set = set()
-                    stop_loss_move_set = set()
-                    player_num = -1
-
-                    state2 = state.squeeze(0).squeeze(0).cpu().numpy()
-
-                    for move, valid in enumerate(valid_moves):
-                        if not valid: continue
-                        if player_num == game.getGameEnded(*game.getNextState(state2, player_num, move)):
-                            win_move_set.add(move)
-                        if -player_num == game.getGameEnded(*game.getNextState(state2, -player_num, move)):
-                            stop_loss_move_set.add(move)
-                        else:
-                            fallback_move_set.add(move)
-
-                    if len(win_move_set) > 0:
-                        ret_move = np.random.choice(list(win_move_set))
-                        #print('Playing winning action %s from %s' % (ret_move, win_move_set))
-                    elif len(stop_loss_move_set) > 0:
-                        ret_move = np.random.choice(list(stop_loss_move_set))
-                        #print('Playing loss stopping action %s from %s' % (ret_move, stop_loss_move_set))
-                    elif len(fallback_move_set) > 0:
-                        ret_move = np.random.choice(list(fallback_move_set))
-                        #print('Playing random action %s from %s' % (ret_move, fallback_move_set))
+                    if random:
+                        action = np.random.randint(game.getActionSize())
+                        valids = game.getValidMoves()
+                    
+                        while valids[action] != 1:
+                            action = np.random.randint(game.getActionSize())
                     else:
-                        raise Exception('No valid moves remaining: %s' % game.stringRepresentation(state2))
+                        valid_moves = game.getValidMoves()
+                        win_move_set = set()
+                        fallback_move_set = set()
+                        stop_loss_move_set = set()
+                        player_num = -1
 
-                    action = ret_move
+                        state2 = state.squeeze(0).squeeze(0).cpu().numpy()
+
+                        for move, valid in enumerate(valid_moves):
+                            if not valid: continue
+                            if player_num == game.getGameEnded(*game.getNextState(state2, player_num, move)):
+                                win_move_set.add(move)
+                            if -player_num == game.getGameEnded(*game.getNextState(state2, -player_num, move)):
+                                stop_loss_move_set.add(move)
+                            else:
+                                fallback_move_set.add(move)
+
+                        if len(win_move_set) > 0:
+                            ret_move = np.random.choice(list(win_move_set))
+                            #print('Playing winning action %s from %s' % (ret_move, win_move_set))
+                        elif len(stop_loss_move_set) > 0:
+                            ret_move = np.random.choice(list(stop_loss_move_set))
+                            #print('Playing loss stopping action %s from %s' % (ret_move, stop_loss_move_set))
+                        elif len(fallback_move_set) > 0:
+                            ret_move = np.random.choice(list(fallback_move_set))
+                            #print('Playing random action %s from %s' % (ret_move, fallback_move_set))
+                        else:
+                            raise Exception('No valid moves remaining: %s' % game.stringRepresentation(state2))
+
+                        action = ret_move
 
                 actions += [sampled_action]
                 state, reward, done = game.step(action)
@@ -242,6 +249,9 @@ class Trainer:
                     break
 
                 state = state.unsqueeze(0).unsqueeze(0).to(self.device)
+                state[state == -1] = 0
+                state[state == 0] = 0.5
+                state[state == 1] = 1
 
                 all_states = torch.cat([all_states, state], dim=0)
 
@@ -263,4 +273,3 @@ class Trainer:
         self.model.train(True)
         
         #return eval_return
-
