@@ -146,7 +146,8 @@ class Trainer:
 
             # -- pass in target returns
             if self.config.model_type == 'naive':
-                eval_return = self.get_returns(0)
+                eval_return = self.get_returns(0, True)
+                eval_return = self.get_returns(0, False)
             elif self.config.model_type == 'reward_conditioned':
                 if self.config.game == 'Breakout':
                     eval_return = self.get_returns(90)
@@ -157,8 +158,8 @@ class Trainer:
                 elif self.config.game == 'Pong':
                     eval_return = self.get_returns(20)
                 elif self.config.game == 'Connect4':
-                    eval_return = self.get_returns(38, True)
-                    eval_return = self.get_returns(38, False)
+                    eval_return = self.get_returns(35, True)
+                    eval_return = self.get_returns(35, False)
                 else:
                     raise NotImplementedError()
             else:
@@ -200,12 +201,14 @@ class Trainer:
                 action = sampled_action.cpu().numpy()[0,-1]
 
                 if game.player == -1:
+                    # Random
                     if random:
                         action = np.random.randint(game.getActionSize())
                         valids = game.getValidMoves()
                     
                         while valids[action] != 1:
                             action = np.random.randint(game.getActionSize())
+                    # Greedy
                     else:
                         valid_moves = game.getValidMoves()
                         win_move_set = set()

@@ -16,7 +16,7 @@ coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 GAME_URL = 'http://localhost:8000/api/v1/games/' # Game endpoint
 
-DEFAULT_CHECKPOINT = '/media/kinrre/HDD/modelos/connect4/50_iters_100_games_1_reward_Asdf'
+DEFAULT_CHECKPOINT = '/media/kinrre/HDD/modelos/connect4/modelo_dirichlet'
 DEFAULT_REPLAY_LOG = DEFAULT_CHECKPOINT + '/replay_logs/'
 
 args = dotdict({
@@ -28,12 +28,13 @@ args = dotdict({
     'numMCTSSims': 25,          # Number of games moves for MCTS to simulate.
     'arenaCompare': 20,         # Number of games to play during arena play to determine if new net will be accepted.
     'cpuct': 1,
+    'dirichletAlpha': 1.2,     # α = {0.3, 0.15, 0.03} for chess, shogi and Go respectively, scaled in inverse proportion to the approximate number of legal moves in a typical position
 
     'checkpoint': DEFAULT_CHECKPOINT,
     'replay_log': DEFAULT_REPLAY_LOG,
     'load_model': False,
     'load_folder_file': ('temp/', 'best.pth.tar'),
-    'numItersForTrainExamplesHistory': 40,
+    'numItersForTrainExamplesHistory': 20,
 })
 
 

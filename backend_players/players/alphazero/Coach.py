@@ -72,8 +72,7 @@ class Coach():
 
             r = self.game.getGameEnded(board, self.curPlayer)
 
-            #self.buffer.add(board, action, r * iteration, r != 0) # NEW: Save in buffer
-            self.buffer.add(board, action, r, r != 0) # NEW: Save in buffer
+            self.buffer.add(board, action, r * iteration, r != 0) # NEW: Save in buffer
 
             if r != 0:
                 return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer))) for x in trainExamples]
