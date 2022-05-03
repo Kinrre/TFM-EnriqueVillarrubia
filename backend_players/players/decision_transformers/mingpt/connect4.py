@@ -20,7 +20,7 @@ class Connect4GameDT(Connect4Game):
         self.player *= -1
         return torch.tensor(self.board.np_pieces), reward, done
 
-    def getValidMoves(self):
+    def getValidMoves2(self):
         return super().getValidMoves(self.board.np_pieces, self.player)
 
     def train(self):

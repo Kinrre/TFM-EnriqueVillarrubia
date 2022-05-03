@@ -23,6 +23,12 @@ from backend_players.players.decision_transformers.mingpt.utils import sample
 from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
 
+from backend_players.players.alphazero.MCTS import MCTS
+from backend_players.players.alphazero.utils import dotdict
+
+from backend_players.players.alphazero.connect4.connect4_game import Connect4Game
+from backend_players.players.alphazero.connect4.keras.NNet import NNetWrapper
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,6 +59,17 @@ class Trainer:
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
         self.config = config
+
+        with open('backend_players/players/alphazero/examples/second_game.json') as f:
+            content = f.read()
+            
+        self.game = Connect4GameDT(content)
+        n1 = NNetWrapper(self.game, True)
+        n1.load_checkpoint('/media/kinrre/HDD/modelos/connect4/modelo_returns', 'best.pth.tar')
+
+        args1 = dotdict({'numMCTSSims': 25, 'cpuct': 1})
+        mcts1 = MCTS(self.game, n1, args1)
+        self.n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
 
         # take over whatever gpus are on the system
         self.device = 'cpu'
@@ -158,30 +175,25 @@ class Trainer:
                 elif self.config.game == 'Pong':
                     eval_return = self.get_returns(20)
                 elif self.config.game == 'Connect4':
-                    eval_return = self.get_returns(35, True)
-                    eval_return = self.get_returns(35, False)
+                    eval_return = self.get_returns(35, 0)
+                    eval_return = self.get_returns(35, 1)
+                    #eval_return = self.get_returns(35, 2)
                 else:
                     raise NotImplementedError()
             else:
                 raise NotImplementedError()
 
-    def get_returns(self, ret, random):
+    def get_returns(self, ret, type_opponent):
         self.model.train(False)
         
-        with open('backend_players/players/alphazero/examples/second_game.json') as f:
-            content = f.read()
-            
-        game = Connect4GameDT(content)
-
         T_rewards, T_Qs = [], []
         done = True
         
         for i in range(50):
-            state = game.reset()
+            state = self.game.reset()
             state = state.type(torch.float32).to(self.device).unsqueeze(0).unsqueeze(0)
             state[state == -1] = 0
             state[state == 0] = 0.5
-            state[state == 1] = 1
 
             rtgs = [ret]
             
@@ -196,33 +208,31 @@ class Trainer:
             
             while True:
                 if done:
-                    state, reward_sum, done = game.reset(), 0, False
+                    state, reward_sum, done = self.game.reset(), 0, False
 
                 action = sampled_action.cpu().numpy()[0,-1]
 
-                if game.player == -1:
+                if self.game.player == -1:
                     # Random
-                    if random:
-                        action = np.random.randint(game.getActionSize())
-                        valids = game.getValidMoves()
+                    if type_opponent == 0:
+                        action = np.random.randint(self.game.getActionSize())
+                        valids = self.game.getValidMoves2()
                     
                         while valids[action] != 1:
-                            action = np.random.randint(game.getActionSize())
+                            action = np.random.randint(self.game.getActionSize())
                     # Greedy
-                    else:
-                        valid_moves = game.getValidMoves()
+                    elif type_opponent == 1:
+                        valid_moves = self.game.getValidMoves2()
                         win_move_set = set()
                         fallback_move_set = set()
                         stop_loss_move_set = set()
                         player_num = -1
 
-                        state2 = state.squeeze(0).squeeze(0).cpu().numpy()
-
                         for move, valid in enumerate(valid_moves):
                             if not valid: continue
-                            if player_num == game.getGameEnded(*game.getNextState(state2, player_num, move)):
+                            if player_num == self.game.getGameEnded(*self.game.getNextState(self.game.board.np_pieces, player_num, move)):
                                 win_move_set.add(move)
-                            if -player_num == game.getGameEnded(*game.getNextState(state2, -player_num, move)):
+                            if -player_num == self.game.getGameEnded(*self.game.getNextState(self.game.board.np_pieces, -player_num, move)):
                                 stop_loss_move_set.add(move)
                             else:
                                 fallback_move_set.add(move)
@@ -237,12 +247,14 @@ class Trainer:
                             ret_move = np.random.choice(list(fallback_move_set))
                             #print('Playing random action %s from %s' % (ret_move, fallback_move_set))
                         else:
-                            raise Exception('No valid moves remaining: %s' % game.stringRepresentation(state2))
+                            raise Exception('No valid moves remaining: %s' % self.game.stringRepresentation(state2))
 
                         action = ret_move
+                    elif type_opponent == 2:
+                        action = self.n1p(self.game.getCanonicalForm(self.game.board.np_pieces, self.game.player))
 
                 actions += [sampled_action]
-                state, reward, done = game.step(action)
+                state, reward, done = self.game.step(action)
                 reward_sum += reward
                 j += 1
 
@@ -254,13 +266,12 @@ class Trainer:
                 state = state.unsqueeze(0).unsqueeze(0).to(self.device)
                 state[state == -1] = 0
                 state[state == 0] = 0.5
-                state[state == 1] = 1
 
                 all_states = torch.cat([all_states, state], dim=0)
 
                 rtgs += [rtgs[-1] - reward]
 
-                valid_actions = game.getValidMoves()
+                valid_actions = self.game.getValidMoves2()
                 
                 # all_states has all previous states and rtgs has all previous rtgs (will be cut to block_size in utils.sample)
                 # timestep is just current timestep

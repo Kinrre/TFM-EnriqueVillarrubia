@@ -9,6 +9,12 @@ from backend_players.players.decision_transformers.mingpt.trainer_atari import T
 from backend_players.players.decision_transformers.mingpt.utils import set_seed
 from torch.utils.data import Dataset
 
+from backend_players.players.alphazero.MCTS import MCTS
+from backend_players.players.alphazero.utils import dotdict
+
+from backend_players.players.alphazero.connect4.connect4_game import Connect4Game
+from backend_players.players.alphazero.connect4.keras.NNet import NNetWrapper
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=123)
 parser.add_argument('--context_length', type=int, default=30)
@@ -50,7 +56,6 @@ class StateActionReturnDataset(Dataset):
         states = torch.tensor(np.array(self.data[idx:done_idx]), dtype=torch.float32).reshape(block_size, -1) # (block_size, 4*84*84)
         states[states == -1] = 0
         states[states == 0] = 0.5
-        states[states == 1] = 1
         # NO NORMALIZATION
         # states = states / 255.
         actions = torch.tensor(self.actions[idx:done_idx], dtype=torch.long).unsqueeze(1) # (block_size, 1)
