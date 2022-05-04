@@ -54,8 +54,8 @@ class StateActionReturnDataset(Dataset):
                 break
         idx = done_idx - block_size
         states = torch.tensor(np.array(self.data[idx:done_idx]), dtype=torch.float32).reshape(block_size, -1) # (block_size, 4*84*84)
-        states[states == -1] = 0
         states[states == 0] = 0.5
+        states[states == -1] = 0
         # NO NORMALIZATION
         # states = states / 255.
         actions = torch.tensor(self.actions[idx:done_idx], dtype=torch.long).unsqueeze(1) # (block_size, 1)

@@ -18,7 +18,7 @@ class Connect4GameDT(Connect4Game):
         reward = self.getGameEnded(self.board.np_pieces, self.player)
         done = reward != 0
         self.player *= -1
-        return torch.tensor(self.board.np_pieces), reward, done
+        return torch.tensor(self.board.np_pieces).type(torch.float32), reward, done
 
     def getValidMoves2(self):
         return super().getValidMoves(self.board.np_pieces, self.player)
@@ -31,4 +31,4 @@ class Connect4GameDT(Connect4Game):
         
     def reset(self):
         self.board.reset()
-        return torch.tensor(self.board.np_pieces)
+        return torch.tensor(self.board.np_pieces).type(torch.float32)

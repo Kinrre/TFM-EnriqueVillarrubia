@@ -192,8 +192,8 @@ class Trainer:
         for i in range(50):
             state = self.game.reset()
             state = state.type(torch.float32).to(self.device).unsqueeze(0).unsqueeze(0)
-            state[state == -1] = 0
             state[state == 0] = 0.5
+            state[state == -1] = 0
 
             rtgs = [ret]
             
@@ -201,6 +201,7 @@ class Trainer:
             sampled_action = sample(self.model.module, state, 1, temperature=1.0, sample=True, actions=None, valid_actions=None,
                                     rtgs=torch.tensor(rtgs, dtype=torch.long).to(self.device).unsqueeze(0).unsqueeze(-1), 
                                     timesteps=torch.zeros((1, 1, 1), dtype=torch.int64).to(self.device))
+            action = sampled_action.cpu().numpy()[0,-1]
 
             j = 0
             all_states = state
@@ -209,10 +210,39 @@ class Trainer:
             while True:
                 if done:
                     state, reward_sum, done = self.game.reset(), 0, False
+                    state[state == 0] = 0.5
+                    state[state == -1] = 0
 
-                action = sampled_action.cpu().numpy()[0,-1]
+                actions += [sampled_action]
+                state, reward, done = self.game.step(action)
+                reward_sum += reward
+                j += 1
 
-                if self.game.player == -1:
+                if done:
+                    #print(state, action, reward_sum)
+                    T_rewards.append(reward_sum)
+                    break
+
+                state = state.unsqueeze(0).unsqueeze(0).to(self.device)
+                state[state == 0] = 0.5
+                state[state == -1] = 0
+
+                all_states = torch.cat([all_states, state], dim=0)
+
+                rtgs += [rtgs[-1] - reward]
+
+                valid_actions = self.game.getValidMoves2()
+                
+                # all_states has all previous states and rtgs has all previous rtgs (will be cut to block_size in utils.sample)
+                # timestep is just current timestep
+                if self.game.player == 1:
+                    sampled_action = sample(self.model.module, all_states.unsqueeze(0), 1, temperature=1.0, sample=True, 
+                                        actions=torch.tensor(actions, dtype=torch.long).to(self.device).unsqueeze(1).unsqueeze(0),
+                                        valid_actions=torch.tensor(valid_actions, dtype=torch.long).to(self.device).unsqueeze(0),
+                                        rtgs=torch.tensor(rtgs, dtype=torch.long).to(self.device).unsqueeze(0).unsqueeze(-1), 
+                                        timesteps=(min(j, self.config.max_timestep) * torch.ones((1, 1, 1), dtype=torch.int64).to(self.device)))
+                    action = sampled_action.cpu().numpy()[0,-1]
+                else:
                     # Random
                     if type_opponent == 0:
                         action = np.random.randint(self.game.getActionSize())
@@ -247,39 +277,13 @@ class Trainer:
                             ret_move = np.random.choice(list(fallback_move_set))
                             #print('Playing random action %s from %s' % (ret_move, fallback_move_set))
                         else:
-                            raise Exception('No valid moves remaining: %s' % self.game.stringRepresentation(state2))
+                            raise Exception('No valid moves remaining: %s' % self.game.stringRepresentation(self.game.board.np_pieces))
 
                         action = ret_move
                     elif type_opponent == 2:
                         action = self.n1p(self.game.getCanonicalForm(self.game.board.np_pieces, self.game.player))
 
-                actions += [sampled_action]
-                state, reward, done = self.game.step(action)
-                reward_sum += reward
-                j += 1
-
-                if done:
-                    #print(state, action, reward_sum)
-                    T_rewards.append(reward_sum)
-                    break
-
-                state = state.unsqueeze(0).unsqueeze(0).to(self.device)
-                state[state == -1] = 0
-                state[state == 0] = 0.5
-
-                all_states = torch.cat([all_states, state], dim=0)
-
-                rtgs += [rtgs[-1] - reward]
-
-                valid_actions = self.game.getValidMoves2()
-                
-                # all_states has all previous states and rtgs has all previous rtgs (will be cut to block_size in utils.sample)
-                # timestep is just current timestep
-                sampled_action = sample(self.model.module, all_states.unsqueeze(0), 1, temperature=1.0, sample=True, 
-                                        actions=torch.tensor(actions, dtype=torch.long).to(self.device).unsqueeze(1).unsqueeze(0),
-                                        valid_actions=torch.tensor(valid_actions, dtype=torch.long).to(self.device).unsqueeze(0),
-                                        rtgs=torch.tensor(rtgs, dtype=torch.long).to(self.device).unsqueeze(0).unsqueeze(-1), 
-                                        timesteps=(min(j, self.config.max_timestep) * torch.ones((1, 1, 1), dtype=torch.int64).to(self.device)))
+                    sampled_action = torch.tensor([[action]]).to(self.device)
         
         #eval_return = sum(T_rewards) / 10.
         #print("target return: %d, eval return: %d" % (ret, eval_return))

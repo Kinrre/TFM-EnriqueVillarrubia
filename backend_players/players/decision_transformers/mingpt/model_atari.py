@@ -150,10 +150,10 @@ class GPT(nn.Module):
         logger.info("number of parameters: %e", sum(p.numel() for p in self.parameters()))
 
 
-        self.state_encoder = nn.Sequential(nn.Conv2d(1, 2, 2, stride=1, padding=0), nn.ReLU(),
-                                           #nn.Conv2d(2, 4, 2, stride=1, padding=0), nn.ReLU(),
+        self.state_encoder = nn.Sequential(nn.Conv2d(1, 4, 2, stride=1, padding=0), nn.ReLU(),
+                                           #nn.Conv2d(4, 8, 2, stride=1, padding=0), nn.ReLU(),
                                            #nn.Conv2d(32, 64, 1, stride=1, padding=0), nn.ReLU(),
-                                           nn.Flatten(), nn.Linear(60, config.n_embd), nn.Tanh())
+                                           nn.Flatten(), nn.Linear(120, config.n_embd), nn.Tanh())
 
         self.ret_emb = nn.Sequential(nn.Linear(1, config.n_embd), nn.Tanh())
 
