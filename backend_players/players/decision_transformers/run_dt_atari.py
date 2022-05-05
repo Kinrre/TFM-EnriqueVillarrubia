@@ -67,7 +67,7 @@ class StateActionReturnDataset(Dataset):
         return states, actions, rtgs, timesteps
 
 #obss, actions, returns, done_idxs, rtgs, timesteps = create_dataset(args.num_buffers, args.num_steps, args.game, args.data_dir_prefix, args.trajectories_per_buffer)
-obss, actions, returns, done_idxs, rtgs, timesteps = create_dataset(1, 35000 / 2, '/media/kinrre/HDD/modelos/connect4/50_iters_100_games_updating_reward/replay_logs', (6, 7), 100)
+obss, actions, returns, done_idxs, rtgs, timesteps = create_dataset(1, 15000, '/media/kinrre/HDD/modelos/connect4/50_iters_100_games_updating_reward/replay_logs', (6, 7), 100)
 
 # set up logging
 logging.basicConfig(

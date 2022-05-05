@@ -177,7 +177,7 @@ class Trainer:
                 elif self.config.game == 'Connect4':
                     eval_return = self.get_returns(20, 0)
                     eval_return = self.get_returns(20, 1)
-                    #eval_return = self.get_returns(20, 2)
+                    eval_return = self.get_returns(20, 2)
                 else:
                     raise NotImplementedError()
             else:
@@ -189,7 +189,7 @@ class Trainer:
         T_rewards, T_Qs = [], []
         done = True
         
-        for i in range(50):
+        for i in range(20):
             state = self.game.reset()
             state = state.type(torch.float32).to(self.device).unsqueeze(0).unsqueeze(0)
             state[state == 0] = 0.5

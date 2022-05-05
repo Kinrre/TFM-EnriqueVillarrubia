@@ -154,6 +154,8 @@ class GPT(nn.Module):
                                            #nn.Conv2d(4, 8, 2, stride=1, padding=0), nn.ReLU(),
                                            #nn.Conv2d(32, 64, 1, stride=1, padding=0), nn.ReLU(),
                                            nn.Flatten(), nn.Linear(120, config.n_embd), nn.Tanh())
+        
+        #self.state_encoder = nn.Sequential(nn.Flatten(), nn.Linear(42, config.n_embd), nn.Tanh())
 
         self.ret_emb = nn.Sequential(nn.Linear(1, config.n_embd), nn.Tanh())
 

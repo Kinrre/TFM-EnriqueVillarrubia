@@ -36,7 +36,7 @@ def create_dataset(num_buffers, num_steps, replay_logs_path, observation_shape, 
             trajectories_to_load = trajectories_per_buffer
 
             while not done:
-                states, ac, ret, next_states, next_action, next_reward, terminal, indices = frb.sample_transition_batch(batch_size=1, indices=[i])
+                states, ac, ret, next_states, next_action, next_reward, terminal, indices = frb.sample_transition_batch(batch_size=1, indices=[i+5000])
                 states = states.transpose((0, 3, 1, 2))[0] # (1, 84, 84, 4) --> (4, 84, 84)
                 
                 if i % 2 == 0:
