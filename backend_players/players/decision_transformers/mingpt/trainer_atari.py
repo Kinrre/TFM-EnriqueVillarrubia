@@ -65,7 +65,7 @@ class Trainer:
             
         self.game = Connect4GameDT(content)
         n1 = NNetWrapper(self.game, True)
-        n1.load_checkpoint('/media/kinrre/HDD/modelos/connect4/modelo_returns', 'best.pth.tar')
+        n1.load_checkpoint('/media/kinrre/HDD/modelos/connect4/50_iters_100_games_updating_reward/', 'best.pth.tar')
 
         args1 = dotdict({'numMCTSSims': 25, 'cpuct': 1})
         mcts1 = MCTS(self.game, n1, args1)
@@ -175,9 +175,9 @@ class Trainer:
                 elif self.config.game == 'Pong':
                     eval_return = self.get_returns(20)
                 elif self.config.game == 'Connect4':
-                    eval_return = self.get_returns(35, 0)
-                    eval_return = self.get_returns(35, 1)
-                    #eval_return = self.get_returns(35, 2)
+                    eval_return = self.get_returns(20, 0)
+                    eval_return = self.get_returns(20, 1)
+                    #eval_return = self.get_returns(20, 2)
                 else:
                     raise NotImplementedError()
             else:
@@ -213,7 +213,9 @@ class Trainer:
                     state[state == 0] = 0.5
                     state[state == -1] = 0
 
-                actions += [sampled_action]
+                if j % 2 == 0:
+                    actions += [sampled_action]
+
                 state, reward, done = self.game.step(action)
                 reward_sum += reward
                 j += 1
@@ -227,9 +229,9 @@ class Trainer:
                 state[state == 0] = 0.5
                 state[state == -1] = 0
 
-                all_states = torch.cat([all_states, state], dim=0)
-
-                rtgs += [rtgs[-1] - reward]
+                if j % 2 == 0:
+                    all_states = torch.cat([all_states, state], dim=0)
+                    rtgs += [rtgs[-1] - reward]
 
                 valid_actions = self.game.getValidMoves2()
                 
@@ -282,12 +284,10 @@ class Trainer:
                         action = ret_move
                     elif type_opponent == 2:
                         action = self.n1p(self.game.getCanonicalForm(self.game.board.np_pieces, self.game.player))
-
-                    sampled_action = torch.tensor([[action]]).to(self.device)
         
         #eval_return = sum(T_rewards) / 10.
         #print("target return: %d, eval return: %d" % (ret, eval_return))
-        print(np.unique(T_rewards, return_counts=True))
+        print(type_opponent, np.unique(T_rewards, return_counts=True))
         self.model.train(True)
         
         #return eval_return
