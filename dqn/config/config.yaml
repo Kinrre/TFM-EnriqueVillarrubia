@@ -1,0 +1,24 @@
+---
+model:
+  state_size: # Input is a stack of 4 frames (84x84)
+    - 84
+    - 84
+    - 4
+  action_size: 3 # Possible actions: left, right or shoot
+  learning_rate: 0.00025 # Learning rate of the neural network
+
+training:
+  enabled: True # Train the agent or not
+  total_episodes: 300 # Total episodes for training
+  max_steps: 100 # Maximum number of steps in an episode
+  batch_size: 64 # Training batch size
+  exploration:
+    explore_start: 1.0 # Exploration probability at start
+    explore_stop: 0.01 # Exploration probability at stop
+    decay_rate: 0.0001 # Exponential decay rate for exploration probability
+  q_learning:
+    gamma: 0.95 # Discounting rate
+
+memory:
+  pretrain_length: 64 # Number of experiences when the memory is initialized
+  memory_size: 10000 # Size of the memory in number of experiences
