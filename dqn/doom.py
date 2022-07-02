@@ -13,9 +13,9 @@ def test_enviroment():
     """
     # Create the enviroment
     game = DoomGame()
-
-    game.load_config('dqn/config/basic.cfg')
-    game.set_doom_scenario_path('config/basic.wad')
+    
+    # Load the correct configuration
+    game.load_config('config/basic.cfg')
     game.init()
 
     left = [1, 0, 0]
@@ -31,15 +31,12 @@ def test_enviroment():
         while not game.is_episode_finished():
             state = game.get_state()
             img = state.screen_buffer
-            stack_frames('', img, True)
             misc = state.game_variables
             action = random.choice(possible_actions)
 
-            print(action)
-
             reward = game.make_action(action)
 
-            print('\tReward:', reward)
+            print('Reward:', reward)
             time.sleep(0.02)
 
         print('Result:', game.get_total_reward())
@@ -57,10 +54,6 @@ def create_enviroment():
     
     # Load the correct configuration
     game.load_config('config/basic.cfg')
-
-    # Load the correct scenario (in our case basic scenario)
-    game.set_doom_scenario_path('config/basic.wad')
-
     game.init()
 
     # Here our possible actions
@@ -121,3 +114,7 @@ def stack_frames(stacked_frames, state, is_new_episode):
         stacked_state = np.stack(stacked_frames, axis=2)
 
     return stacked_state, stacked_frames
+    
+    
+if __name__ == '__main__':
+    test_enviroment()
