@@ -9,7 +9,7 @@ model:
 
 training:
   enabled: True # Train the agent or not
-  total_episodes: 300 # Total episodes for training
+  total_episodes: 500 # Total episodes for training
   max_steps: 100 # Maximum number of steps in an episode
   batch_size: 64 # Training batch size
   exploration:

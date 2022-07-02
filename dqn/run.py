@@ -1,7 +1,9 @@
 import doom as doom
+import matplotlib.pyplot as plt
 import numpy as np
 import random
 import tensorflow.compat.v1 as tf
+import seaborn as sns
 import time
 import yaml
 
@@ -10,6 +12,9 @@ from DQNetwork import DQNetwork
 from logged_replay_buffer import OutOfGraphLoggedReplayBuffer
 from Memory import Memory
 from utils import binatointeger, predict_action
+
+# Change the color palette of matplotlib
+sns.set()
 
 # Config file
 with open('config/config.yaml') as f:
@@ -128,7 +133,12 @@ tf.summary.scalar('Loss', dqn_network.loss)
 write_op = tf.summary.merge_all()
 
 # Saver will help us to save our model
-saver = tf.train.Saver()
+saver = tf.train.Saver(max_to_keep=total_episodes + 1)
+
+# Result variables
+list_total_reward = []
+list_target_reward = np.repeat(83, total_episodes)
+list_total_episodes = np.arange(total_episodes) + 1
 
 ## TRAINING
 if training == True:
@@ -160,7 +170,7 @@ if training == True:
                 step += 1
                 
                 # Increase decay_step
-                decay_step +=1
+                decay_step += 1
                 
                 # Predict the action to take and take it
                 action, explore_probability = predict_action(sess, dqn_network, explore_start, explore_stop, decay_rate, decay_step, state, possible_actions)
@@ -202,14 +212,12 @@ if training == True:
                     print('Explore P: {:.4f}'.format(explore_probability))
 
                     memory.add((state, action, reward, next_state, done))
-
                 else:
                     # Get the next state
                     next_state = game.get_state().screen_buffer
                     
                     # Stack the frame of the next_state
                     next_state, stacked_frames = doom.stack_frames(stacked_frames, next_state, False)
-                    
 
                     # Add experience to memory
                     memory.add((state, action, reward, next_state, done))
@@ -228,7 +236,7 @@ if training == True:
 
                 target_Qs_batch = []
 
-                 # Get Q values for next_state 
+                # Get Q values for next_state 
                 Qs_next_state = sess.run(dqn_network.output, feed_dict = {dqn_network.inputs_: next_states_mb})
                 
                 # Set Q_target = r if the episode ends at s+1, otherwise set Q_target = r + gamma*maxQ(s', a')
@@ -258,9 +266,9 @@ if training == True:
                 writer.flush()
 
             # Save model every 5 episodes
-            if episode % 5 == 0:
-                save_path = saver.save(sess, './models/model.ckpt')
-                print('Model Saved')
+            #if episode % 5 == 0:
+            save_path = saver.save(sess, f'./models/model_{episode}.ckpt')
+            print('Model Saved')
 
     # Output to the buffer the final experiences
     buffer.log_final_buffer()
@@ -268,46 +276,59 @@ if training == True:
 
 ## TESTING
 with tf.Session() as sess:
-    scores = []
-    game, possible_actions = doom.create_enviroment()
-    totalScore = 0
-    
-    # Load the model
-    saver.restore(sess, './models/model.ckpt')
-    game.init()
-
-    for i in range(10):
-        done = False
-        game.new_episode()
+    for episode in range(total_episodes):
+        scores = []
+        game, possible_actions = doom.create_enviroment()
+        totalScore = 0
         
-        state = game.get_state().screen_buffer
-        state, stacked_frames = doom.stack_frames(stacked_frames, state, True)
+        # Load the model
+        saver.restore(sess, f'./models/model_{episode}.ckpt')
+        game.init()
+
+        for i in range(10):
+            done = False
+            game.new_episode()
             
-        while not game.is_episode_finished():
-            # Take the biggest Q value (= the best action)
-            Qs = sess.run(dqn_network.output, feed_dict = {dqn_network.inputs_: state.reshape((1, *state.shape))})
-            
-            # Take the biggest Q value (= the best action)
-            choice = np.argmax(Qs)
-            action = possible_actions[int(choice)]
-            
-            game.make_action(action)
-            done = game.is_episode_finished()
+            state = game.get_state().screen_buffer
+            state, stacked_frames = doom.stack_frames(stacked_frames, state, True)
+                
+            while not game.is_episode_finished():
+                # Take the biggest Q value (= the best action)
+                Qs = sess.run(dqn_network.output, feed_dict = {dqn_network.inputs_: state.reshape((1, *state.shape))})
+                
+                # Take the biggest Q value (= the best action)
+                choice = np.argmax(Qs)
+                action = possible_actions[int(choice)]
+                
+                game.make_action(action)
+                done = game.is_episode_finished()
+                score = game.get_total_reward()
+                
+                if done:
+                    break  
+                else:
+                    next_state = game.get_state().screen_buffer
+                    next_state, stacked_frames = doom.stack_frames(stacked_frames, next_state, False)
+                    state = next_state
+
+                #time.sleep(0.02)
+
             score = game.get_total_reward()
-            
-            if done:
-                break  
-            else:
-                next_state = game.get_state().screen_buffer
-                next_state, stacked_frames = doom.stack_frames(stacked_frames, next_state, False)
-                state = next_state
+            scores.append(score)
+            print('Score: ', score)
+        
+        game.close()
 
-            time.sleep(0.02)
+        mean_score = sum(scores) / 10.
+        print('Mean score: ', mean_score)
+        list_total_reward.append(mean_score)
 
-        score = game.get_total_reward()
-        scores.append(score)
-        print('Score: ', score)
-    
-    game.close()
 
-    print('Mean score: ', sum(scores) / 10.)
+## RESULTS
+plt.title('Evolution of the agent')
+plt.xlabel('Episode')
+plt.ylabel('Reward')
+plt.plot(list_total_episodes, list_total_reward, label='Agent')
+plt.plot(list_total_episodes, list_target_reward, label='Target')
+plt.legend()
+plt.savefig('agent_evolution.png', dpi=300)
