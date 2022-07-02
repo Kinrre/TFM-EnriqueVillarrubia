@@ -36,6 +36,9 @@ gamma = config['training']['q_learning']['gamma']
 pretrain_length = config['memory']['pretrain_length']
 memory_size = config['memory']['memory_size']
 
+# Buffer config
+output_path = config['buffer']['output_path']
+
 # Reset the graph
 tf.reset_default_graph()
 
@@ -49,7 +52,7 @@ dqn_network = DQNetwork(state_size, action_size, learning_rate)
 memory = Memory(max_size=memory_size)
 
 # Create a buffer to store the experience replay
-buffer = OutOfGraphLoggedReplayBuffer('/media/kinrre/HDD/modelos/dqn/temp',
+buffer = OutOfGraphLoggedReplayBuffer(output_path,
                                       batch_size=32,
                                       observation_shape=(84, 84),
                                       replay_capacity=25000,

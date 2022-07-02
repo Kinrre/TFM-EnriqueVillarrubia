@@ -22,3 +22,6 @@ training:
 memory:
   pretrain_length: 64 # Number of experiences when the memory is initialized
   memory_size: 10000 # Size of the memory in number of experiences
+
+buffer:
+  output_path: /media/kinrre/HDD/modelos/dqn/final # Buffer log dir

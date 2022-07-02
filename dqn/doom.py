@@ -11,13 +11,14 @@ def test_enviroment():
     """
     Test the enviroment with random actions.
     """
-    # Create the enviroment
+    # Create the environment
     game = DoomGame()
     
-    # Load the correct configuration
+    # Load the configuration
     game.load_config('config/basic.cfg')
     game.init()
 
+    # Define the possible actions
     left = [1, 0, 0]
     right = [0, 1, 0]
     shoot = [0, 0, 1]
@@ -52,11 +53,11 @@ def create_enviroment():
     # Create the enviroment
     game = DoomGame()
     
-    # Load the correct configuration
+    # Load the configuration
     game.load_config('config/basic.cfg')
     game.init()
 
-    # Here our possible actions
+    # Define the possible actions
     left = [1, 0, 0]
     right = [0, 1, 0]
     shoot = [0, 0, 1]
@@ -78,11 +79,11 @@ def preprocess_frame(frame):
     # Crop the screen (remove the roof because it contains no information)
     cropped_frame = frame[30:-10, 30:-30]
 
-    # Normalize pixel values (0 to 1)
-    normalized_frame = cropped_frame / 255.0
+    # Resize to 84x84
+    resized_frame = transform.resize(cropped_frame, [84, 84])
 
-    # Resize to 84x84 (from 80x100, complexity is reduced)
-    preprocessed_frame = transform.resize(normalized_frame, [84, 84])
+    # Normalize pixel values (0 to 1)
+    preprocessed_frame = resized_frame / 255.0
     
     return preprocessed_frame
 
