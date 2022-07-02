@@ -16,8 +16,10 @@ so nothing in this file really has anything to do with GPT specifically.
 
 import logging
 import math
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import seaborn as sns
 
 from collections import deque
 from mingpt.utils import sample
@@ -26,6 +28,8 @@ from tqdm import tqdm
 from vizdoom import DoomGame
 from skimage import transform
 
+# Change the color palette of matplotlib
+sns.set()
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +143,11 @@ class Trainer:
 
         self.tokens = 0 # counter used for learning rate decay
 
+        # Result variables
+        list_total_reward = []
+        list_target_reward = np.repeat(83, config.max_epochs)
+        list_epochs = np.arange(config.max_epochs) + 1
+
         for epoch in range(config.max_epochs):
 
             run_epoch('train', epoch_num=epoch)
@@ -164,11 +173,22 @@ class Trainer:
                 elif self.config.game == 'Pong':
                     eval_return = self.get_returns(20)
                 elif self.config.game == 'Doom':
-                    eval_return = self.get_returns(95)
+                    eval_return = self.get_returns(83)
+                    list_total_reward.append(eval_return)
                 else:
                     raise NotImplementedError()
             else:
                 raise NotImplementedError()
+
+        ## RESULTS
+        print(list_total_reward)
+        plt.title('Evolution of the agent')
+        plt.xlabel('Epoch')
+        plt.ylabel('Reward')
+        plt.plot(list_epochs, list_total_reward, label='Agent')
+        plt.plot(list_epochs, list_target_reward, label='Target')
+        plt.legend()
+        plt.savefig('agent_evolution_epoachs.png', dpi=300)
 
     def get_returns(self, ret):
         env = Env()
@@ -226,9 +246,8 @@ class Env():
     def __init__(self):
         self.game = DoomGame()
         
-        # Load the correct configuration
-        self.game.load_config("config/basic.cfg")
-
+        # Load the configuration
+        self.game.load_config('config/basic.cfg')
         self.game.init()
 
     def preprocess_frame(self, frame):
@@ -271,18 +290,16 @@ class Env():
 
         return stacked_state, stacked_frames
 
-    def step(self, action):
-        if action == 0:
-            action = [0, 0, 0]
-        elif action == 1:
-            action = [0, 0, 1]
-        elif action == 2:
-            action = [0, 1, 0]
-        elif action == 3:
-            action = [0, 1, 1]
-        elif action == 4:
-            action = [1, 0, 0]
+    def integertobin(self, num, padding):
+        """
+        Convert an integer to a binary list with the specified padding length.
+        """
+        str_list = list(np.binary_repr(num).zfill(padding))
+        binary = np.array(str_list).astype(np.int8)
+        return binary
 
+    def step(self, action):
+        action = self.integertobin(action, padding=3)
         reward = self.game.make_action(action)
         done = self.game.is_episode_finished()
 
@@ -295,14 +312,12 @@ class Env():
 
         return torch.stack(list(self.stacked_frames), 0), reward, done
 
-
     def reset(self):
+        # Create a new episode
         self.game.new_episode()
         state = self.game.get_state().screen_buffer
 
-        # Initialize deque with zero-images one array for each image
-        self.stacked_frames = deque([torch.Tensor(np.zeros((84, 84), dtype=np.int)) for i in range(4)], maxlen=4)
+        # Stack the first frame four times
+        state, self.stacked_frames = self.stack_frames(None, state, is_new_episode=True)
             
-        # Remember that stack frame function also call our preprocess function.
-        #state, self.stacked_frames = self.stack_frames(self.stacked_frames, state, True)
         return torch.stack(list(self.stacked_frames), 0)

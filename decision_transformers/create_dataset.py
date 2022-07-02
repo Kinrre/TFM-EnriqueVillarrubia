@@ -95,6 +95,7 @@ def create_dataset(num_buffers, num_steps, game, data_dir_prefix, trajectories_p
         i = int(i)
         timesteps[start_index:i+1] = np.arange(i+1 - start_index)
         start_index = i+1
+        
     print('max timestep is %d' % max(timesteps))
 
     return obss, actions, returns, done_idxs, rtg, timesteps
