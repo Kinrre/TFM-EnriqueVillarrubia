@@ -157,3 +157,7 @@ dqn/_vizdoom
 dqn/_vizdoom.ini
 dqn/models/
 dqn/tensorboard/
+
+# Decision Transformers
+decision_transformers/_vizdoom
+decision_transformers/_vizdoom.ini

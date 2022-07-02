@@ -26,11 +26,11 @@ from torch.nn import functional as F
 
 logger = logging.getLogger(__name__)
 
-import numpy as np
 
 class GELU(nn.Module):
     def forward(self, input):
         return F.gelu(input)
+
 
 class GPTConfig:
     """ base GPT config, params common to all GPT versions """
@@ -44,11 +44,13 @@ class GPTConfig:
         for k,v in kwargs.items():
             setattr(self, k, v)
 
+
 class GPT1Config(GPTConfig):
     """ GPT-1 like network roughly 125M params """
     n_layer = 12
     n_head = 12
     n_embd = 768
+
 
 class CausalSelfAttention(nn.Module):
     """
@@ -96,6 +98,7 @@ class CausalSelfAttention(nn.Module):
         y = self.resid_drop(self.proj(y))
         return y
 
+
 class Block(nn.Module):
     """ an unassuming Transformer block """
 
@@ -115,6 +118,7 @@ class Block(nn.Module):
         x = x + self.attn(self.ln1(x))
         x = x + self.mlp(self.ln2(x))
         return x
+
 
 class GPT(nn.Module):
     """  the full GPT language model, with a context size of block_size """

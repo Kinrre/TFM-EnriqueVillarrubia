@@ -11,8 +11,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 import random
 import numpy as np
 import torch
-import torch.nn as nn
 from torch.nn import functional as F
+
 
 def set_seed(seed):
     random.seed(seed)
@@ -20,11 +20,13 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
+
 def top_k_logits(logits, k):
     v, ix = torch.topk(logits, k)
     out = logits.clone()
     out[out < v[:, [-1]]] = -float('Inf')
     return out
+
 
 @torch.no_grad()
 def sample(model, x, steps, temperature=1.0, sample=False, top_k=None, actions=None, rtgs=None, timesteps=None):

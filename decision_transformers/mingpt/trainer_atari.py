@@ -13,30 +13,22 @@ Simple training loop; Boilerplate that could apply to any arbitrary neural netwo
 so nothing in this file really has anything to do with GPT specifically.
 """
 
-import math
+
 import logging
-
-from tqdm import tqdm
+import math
 import numpy as np
-
 import torch
-import torch.optim as optim
-from torch.optim.lr_scheduler import LambdaLR
-from torch.utils.data.dataloader import DataLoader
 
-from vizdoom import * # Doom Enviroment
-from skimage import transform # Help us to preprocess the frames
+from collections import deque
+from mingpt.utils import sample
+from torch.utils.data.dataloader import DataLoader
+from tqdm import tqdm
+from vizdoom import DoomGame
+from skimage import transform
+
 
 logger = logging.getLogger(__name__)
 
-from mingpt.utils import sample
-import atari_py
-from collections import deque
-import random
-import cv2
-import torch
-from PIL import Image
-import time
 
 class TrainerConfig:
     # optimization parameters
@@ -57,6 +49,7 @@ class TrainerConfig:
     def __init__(self, **kwargs):
         for k,v in kwargs.items():
             setattr(self, k, v)
+
 
 class Trainer:
 
@@ -178,13 +171,10 @@ class Trainer:
                 raise NotImplementedError()
 
     def get_returns(self, ret):
-        #self.model.train(False)
-        #args=Args(self.config.game.lower(), self.config.seed)
         env = Env()
-        #env.eval()
-
         T_rewards, T_Qs = [], []
         done = True
+
         for i in range(10):
             state = env.reset()
             state = state.type(torch.float32).to(self.device).unsqueeze(0).unsqueeze(0)
@@ -222,12 +212,13 @@ class Trainer:
                     actions=torch.tensor(actions, dtype=torch.long).to(self.device).unsqueeze(1).unsqueeze(0), 
                     rtgs=torch.tensor(rtgs, dtype=torch.long).to(self.device).unsqueeze(0).unsqueeze(-1), 
                     timesteps=(min(j, self.config.max_timestep) * torch.ones((1, 1, 1), dtype=torch.int64).to(self.device)))
-        #env.close()
-        eval_return = sum(T_rewards)/10.
+
+        eval_return = sum(T_rewards) / 10.
         print("target return: %d, eval return: %d" % (ret, eval_return))
         print(T_rewards)
-        #self.model.train(True)
+
         return eval_return
+
 
 
 class Env():
