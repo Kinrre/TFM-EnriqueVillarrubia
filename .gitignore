@@ -151,3 +151,9 @@ docs_latex/
 
 # Visual code
 .vscode/
+
+# DQN
+dqn/_vizdoom
+dqn/_vizdoom.ini
+dqn/models/
+dqn/tensorboard/
