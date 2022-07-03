@@ -75,7 +75,7 @@ class Trainer:
         logger.info("saving %s", self.config.ckpt_path)
         # torch.save(raw_model.state_dict(), self.config.ckpt_path)
 
-    def train(self):
+    def train(self, return_to_go_target=83):
         model, config = self.model, self.config
         raw_model = model.module if hasattr(self.model, "module") else model
         optimizer = raw_model.configure_optimizers(config)
@@ -173,7 +173,7 @@ class Trainer:
                 elif self.config.game == 'Pong':
                     eval_return = self.get_returns(20)
                 elif self.config.game == 'Doom':
-                    eval_return = self.get_returns(83)
+                    eval_return = self.get_returns(return_to_go_target)
                     list_total_reward.append(eval_return)
                 else:
                     raise NotImplementedError()
@@ -188,7 +188,7 @@ class Trainer:
         plt.plot(list_epochs, list_total_reward, label='Agent')
         plt.plot(list_epochs, list_target_reward, label='Target')
         plt.legend()
-        plt.savefig('agent_evolution_epoachs.png', dpi=300)
+        plt.savefig('agent_evolution_epochs.png', dpi=300)
 
     def get_returns(self, ret):
         env = Env()
