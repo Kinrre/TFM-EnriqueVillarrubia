@@ -18,7 +18,7 @@ class DQNetwork:
             # Remember that target_Q is the R(s,a) + ymax Qhat(s', a')
             self.target_Q = tf.placeholder(tf.float32, [None], name='target')
 
-            # First Conv2D network + batch normalization + relu activation function
+            # First Conv2D network + batch normalization + elu activation function
             # Input: 84x84x4
             # Output: 20x20x32
             self.conv1 = tf.layers.conv2d(inputs=self.inputs_,
@@ -32,9 +32,9 @@ class DQNetwork:
                                                                  training=True,
                                                                  epsilon=1e-5,
                                                                  name='batch_norm1')
-            self.conv1_out = tf.nn.relu(self.conv1_batchnorm, name='conv1_out')
+            self.conv1_out = tf.nn.elu(self.conv1_batchnorm, name='conv1_out')
 
-            # Second Conv2D network + batch normalization + relu activation function
+            # Second Conv2D network + batch normalization + elu activation function
             # Output: 9x9x64
             self.conv2 = tf.layers.conv2d(inputs=self.conv1_out,
                                           filters=64,
@@ -47,9 +47,9 @@ class DQNetwork:
                                                                  training=True,
                                                                  epsilon=1e-5,
                                                                  name='batch_norm2')
-            self.conv2_out = tf.nn.relu(self.conv2_batchnorm, name='conv2_out')
+            self.conv2_out = tf.nn.elu(self.conv2_batchnorm, name='conv2_out')
 
-            # Third Conv2D network + batch normalization + relu activation function
+            # Third Conv2D network + batch normalization + elu activation function
             # Output: 3x3x128
             self.conv3 = tf.layers.conv2d(inputs=self.conv2_out,
                                           filters=128,
@@ -62,7 +62,7 @@ class DQNetwork:
                                                                  training=True,
                                                                  epsilon=1e-5,
                                                                  name='batch_norm3')
-            self.conv3_out = tf.nn.relu(self.conv3_batchnorm, name='conv3_out')
+            self.conv3_out = tf.nn.elu(self.conv3_batchnorm, name='conv3_out')
 
             # Flat the result
             # Output: 1152
