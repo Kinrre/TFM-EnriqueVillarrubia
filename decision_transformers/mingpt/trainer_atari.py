@@ -164,19 +164,8 @@ class Trainer:
             if self.config.model_type == 'naive':
                 eval_return = self.get_returns(0)
             elif self.config.model_type == 'reward_conditioned':
-                if self.config.game == 'Breakout':
-                    eval_return = self.get_returns(90)
-                elif self.config.game == 'Seaquest':
-                    eval_return = self.get_returns(1150)
-                elif self.config.game == 'Qbert':
-                    eval_return = self.get_returns(14000)
-                elif self.config.game == 'Pong':
-                    eval_return = self.get_returns(20)
-                elif self.config.game == 'Doom':
-                    eval_return = self.get_returns(return_to_go_target)
-                    list_total_reward.append(eval_return)
-                else:
-                    raise NotImplementedError()
+                eval_return = self.get_returns(return_to_go_target)
+                list_total_reward.append(eval_return)
             else:
                 raise NotImplementedError()
 
