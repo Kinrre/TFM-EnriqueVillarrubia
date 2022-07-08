@@ -1,118 +1,53 @@
 # TFM-EnriqueVillarrubia
 
-The project is organised into the following directories, structured depending on their purpose:
+The project is organised into the following directories, structured depending on the implemented agent:
 
-* __backend.__ Main backend responsible for the users, games and matches management and data persistence.
-* __backend_match.__ Real-time match backend implemented using the WebSocket communication protocol.
-* __backend_players.__ The core of this Bachelor of Computer Science, where the general board game and the AlphaZero algorithm for creation of the players are located. Employing a multiprocessing backend for their creation and verification of movements.
-* __frontend.__ Web application designed in Vue.js.
+* __decision-transformers.__ Decision Transformer agent implementation in PyTorch with charts of the evolution agent and the most important hyper-parameters included.
+* __dqn.__ DQN agent development code in Tensorflow with the agent evolution chart.
 
-The requirements and installation of the application are covered in the next sections.
+The requirements and installation of the agents are covered in the next sections.
 
 ## Requirements
 
-The whole project has been carried out with the Python3 and JavaScript programming language with their respective package management systems and PostgreSQL for the data persistence. The exact versions are enumerated below.
+This master dissertation has been implemented entirely using the Python3 programming language and the pip package management system. The exact versions of the libraries are listed in the `TFM-EnriqueVillarrubia/requirements.txt` file and the rest of them are the following.
 
-* Python3, 3.8.6.
-* Pip, 21.1.2.
-* Node, 14.5.5.
-* Npm, 6.14.11.
-* PostgreSQL, 12.7.
+* Python3, 3.8.10.
+* Pip, 22.1.2.
 
 ## Installation
 
 First, it is necessary to clone the repository.
 
 ```
-git clone https://github.com/Kinrre/TFG-EnriqueVillarrubia.git
+git clone https://github.com/Kinrre/TFM-EnriqueVillarrubia.git
 ```
 
-After that, in each backend directory, there is a requirements file containing all the requisites with the exact versions. They are divided into each subproject to facilitate its installation in different virtual environments. So, it is necessary to execute the following command:
+After that, change to the directory and install the required libraries.
 
 ```
-pip install -r requirements.txt
+cd TFM-EnriqueVillarrubia && pip install -r requirements.txt
 ```
 
-Regarding the frontend, its installation is equivalent to the backend. Instead of installing the packages using pip, as it is developed in JavaScript, npm must be employed. So, navigate to the frontend directory TFG-EnriqueVillarrubia/frontend/ and run:
+Now the installation has finished and it is possible to run both agents.
+
+## Running the DQN agent
+
+The configuration directory on the DQN agent is located in the `TFM-EnriqueVillarrubia/dqn/config/` directory if you want to change any hyperparameter. In order to run it, the command is:
 
 ```
-npm install
+python3 run.py
 ```
 
-With respect to the database running in PostgreSQL, the database name and a randomly generated user and password are included in the file TFG-EnriqueVillarrubia/backend/core/config.py. It is necessary to create the database, the user and then grant the permissions to the new user, instead of using the root one. First, ensure the PostgreSQL process is running:
+## Running the Decision Transformer agent
+
+On the other hand, in the Decision Transformer agent, the hyperparameters are passed through the execution arguments which can be consulted as follows.
 
 ```
-sudo service start postgresql start
+python3 run_dt_atari.py --help
 ```
 
-Then, in order to create the database, open a SQL shell:
+To run it with the default hyperparameters, run the following instruction:
 
 ```
-sudo -u postgres psql
+python3 run_dt_atari.py
 ```
-
-Create the database:
-
-```
-CREATE DATABASE db;
-```
-
-Once created the database, connect to it:
-
-```
-\c db;
-```
-
-After that, the user must be created:
-
-```
-CREATE USER jhtw6nsf WITH ENCRYPTED PASSWORD '475fa74c47d1';
-```
-
-Finally, the user must have all the privileges in that database.
-
-```
-GRANT ALL PRIVILEGES ON DATABASE db to jhtw6nsf;
-```
-
-Now, the installation has finished and the application is ready to be executed.
-
-## Running the main backend
-
-All the backends developed are running using the uvicorn server. In order to execute the main backend, it is necessary to execute the following command in the root of the project:
-
-```
-uvicorn backend.main:app
-```
-
-## Running the real-time match backend
-
-The execution of the real-time match backend is equal to the previous one, except the port of the server must be changed to 8001. So, the command to execute is:
-
-```
-uvicorn backend.main:app --port 8001
-```
-
-## Running the players backend
-
-The players backend is using the 8002 port. In this case, run the following command:
-
-```
-uvicorn backend.main:app --port 8002
-```
-
-## Running the frontend
-
-Finally, a server is required to provide the frontend files. So, the command to execute in the TFG-EnriqueVillarrubia/frontend/ directory is:
-
-```
-npm run serve
-```
-
-It is also possible to compile the web application minifying the files that will be located in the \directory{TFG-EnriqueVillarrubia/frontend/build/} directory, and then use another server running:
-
-```
-npm run build
-```
-
-Lastly, to use the application it is necessary to open a web browser and navigate to http://localhost:8080/. The documentation of the backend is located in http://localhost:8000/docs.
