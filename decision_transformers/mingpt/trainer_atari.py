@@ -240,8 +240,14 @@ class Env():
         self.game.init()
 
     def preprocess_frame(self, frame):
-        """ Here we take a frame, resize it and normalize it """
-        # view_image(frame) We can see the image is greyscale, cause of the config file
+        """
+        Preprocess the frame:
+        - Grayscale
+        - Crop screen
+        - Normalize pixel values
+        - Resize to reduce complexity
+        """
+        # The image is on grayscale due to the ViZDoom config
 
         # Crop the screen (remove the roof because it contains no information)
         cropped_frame = frame[30:-10, 30:-30]
@@ -249,7 +255,7 @@ class Env():
         # Normalize pixel values (0 to 1)
         normalized_frame = cropped_frame / 255.0
 
-        # Resize to 84x84 (from 80x100, complexity is reduced)
+        # Resize to 84x84
         preprocessed_frame = transform.resize(normalized_frame, [84, 84])
         
         return preprocessed_frame
